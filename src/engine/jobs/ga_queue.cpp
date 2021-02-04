@@ -69,27 +69,23 @@ bool ga_queue::pop(void** data)
 {
 	//first lock the head
 	headLock.lock();
-		//remember that the 'head' is a dummy node. So the first real
-		//node is the one the head points to.
-		node* node = (head->next);
+		//get the node we want to delete
+		//and the next node after it
+		node* myNode = head;
+		node* newHead = head->next;
+
 		//if there is something in the queue (other than the dummy node)
-		if (node == nullptr) {
-			delete(node);
+		if (newHead == nullptr) {
 			//meaning that there was nothing to pop
 			headLock.unlock();
 			return false;
 		}
 		
-		*data = node->data;//place the value in the memory of data
-		head->next = node->next;
-		delete(node);
+		*data = newHead->data;//place the value in the memory of data
+		head = newHead;
+		delete(myNode);
 		//delete the node from the heap and decrement nodecount
 		nodeCount--;
-		if (nodeCount == 0) {
-			//this is if the last thing in the queue is deleted,
-			//have to reassign the tail to be pointing at the dummy node
-			tail = head;
-		}
 	headLock.unlock();
 	return true;//we got an element off the queue
 }
