@@ -5,6 +5,10 @@
 ** Viper Engine - Copyright (C) 2016 Velan Studios - All Rights Reserved
 **
 ** This file is distributed under the MIT License. See LICENSE.txt.
+**
+** Owen Hey | Professor Ameres
+** Game Architecture, Spring 2019
+** 661729120, heyo0@rpi.edu
 */
 
 #include "ga_queue.h"
