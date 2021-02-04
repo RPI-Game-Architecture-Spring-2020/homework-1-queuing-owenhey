@@ -11,44 +11,86 @@
 
 ga_queue::ga_queue(int node_count)
 {
-	// TODO:
-	// Initialize the queue.
-	// For extra credit, preallocate 'node_count' elements (instead of
-	// allocating on push).
-	// See https://www.research.ibm.com/people/m/michael/podc-1996.pdf
+	nodeCount = 0;//in my implementation, nodecount is just counting
+				//the number of the nodes in the set, so I will
+				//not use node_count
+
+	//a "dummy" node as the head of the queue,
+	//both the head and the tail point to it
+	node* myNode = new node();
+	myNode->data = nullptr;
+	myNode->next = nullptr;
+
+	head = myNode;
+	tail = myNode;
 }
 
 ga_queue::~ga_queue()
 {
-	// TODO:
-	// Free any resources held by the queue.
-	// See https://www.research.ibm.com/people/m/michael/podc-1996.pdf
+	//deconstructor
+	node* current = head;
+	node* next = head->next;
+	//while we aren't at the end of the linked list
+	while (next != nullptr) {
+		//go forward deleting current and advancing once along the queue
+		delete(current);
+		current = next;
+		next = next->next;
+	}
+	//finally, delete the final node
+	delete(current);
 }
 
 void ga_queue::push(void* data)
 {
-	// TODO:
-	// Push 'data' onto the queue in a thread-safe manner.
-	// If you preallocated 'node_count' elements, and if the queue is full when
-	// this function is called, you must block until another thread pops an
-	// element off the queue.
-	// See https://www.research.ibm.com/people/m/michael/podc-1996.pdf
+	//make a new node in the heap
+	//and put the data into it
+	//its "next" is null because it
+	//is placed at the end of the list
+	node* myNode = new node();
+	myNode->data = data;
+	myNode->next = nullptr;
+	
+	//lock the tail
+	tailLock.lock();
+		//point old tail to this node
+		//and make this node the tail
+		tail->next = myNode;
+		tail = myNode;
+		nodeCount++; //increment node count
+	tailLock.unlock();
 }
 
 bool ga_queue::pop(void** data)
 {
-	// TODO:
-	// Pop one element off the queue in a thread-safe manner and place it in
-	// the memory pointed to by 'data'.
-	// If the queue is empty when this function is called, return false.
-	// Otherwise return true.
-	// See https://www.research.ibm.com/people/m/michael/podc-1996.pdf
-	return false;
+	//first lock the head
+	headLock.lock();
+		//remember that the 'head' is a dummy node. So the first real
+		//node is the one the head points to.
+		node* node = (head->next);
+		//if there is something in the queue (other than the dummy node)
+		if (node == nullptr) {
+			delete(node);
+			//meaning that there was nothing to pop
+			headLock.unlock();
+			return false;
+		}
+		
+		*data = node->data;//place the value in the memory of data
+		head->next = node->next;
+		delete(node);
+		//delete the node from the heap and decrement nodecount
+		nodeCount--;
+		if (nodeCount == 0) {
+			//this is if the last thing in the queue is deleted,
+			//have to reassign the tail to be pointing at the dummy node
+			tail = head;
+		}
+	headLock.unlock();
+	return true;//we got an element off the queue
 }
 
 int ga_queue::get_count() const
 {
-	// TODO:
-	// Get the number of elements currently in the queue.
-	return 0;
+	return nodeCount;
 }
